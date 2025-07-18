@@ -1,15 +1,19 @@
-# BEGIN Next.js SPA Rewrite
+# BEGIN Next.js Dynamic Routing Fix (for /live/ path)
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /live/
 
-  # Only rewrite if not a real file or directory
+  # Skip existing files and folders
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
 
-  # Redirect all requests to index.html or Next.js server handler
-  RewriteRule ^ index.html [L]
+  # Proxy all remaining requests to Node.js server (Next.js)
+  RewriteRule ^ http://127.0.0.1:3000/live%{REQUEST_URI} [P,L]
 </IfModule>
 
-# END Next.js SPA Rewrite
+# Ensure proxy module is enabled on Apache
+<IfModule mod_proxy.c>
+  ProxyPreserveHost On
+  ProxyPassReverse /live/ http://127.0.0.1:3000/live/
+</IfModule>
